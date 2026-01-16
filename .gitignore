@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+###Sensitive confirguration###
+src/main/resources/application.properties
+
+# IDE settings
+.vscode/

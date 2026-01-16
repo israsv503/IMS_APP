@@ -1,0 +1,14 @@
+spring.application.name=ims_app
+
+# Database Connection
+spring.datasource.url=jdbc:postgresql://localhost:5432/ims_db
+spring.datasource.username=postgres
+spring.datasource.password=your_password_goes_here
+
+# JPA / Hibernate Properties
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+# Logging for debugging
+logging.level.org.hibernate.SQL=DEBUG
