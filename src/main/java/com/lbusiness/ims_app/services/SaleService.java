@@ -7,6 +7,8 @@ import com.lbusiness.ims_app.repositories.SaleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.lbusiness.ims_app.dto.DashboardStats;
+import com.lbusiness.ims_app.models.Product;
 
 import java.util.List;
 
@@ -40,5 +42,34 @@ public class SaleService {
 
     // 4. Save the sale record
     return saleRepository.save(sale);
+  }
+
+  // Methods for the results sent to the Dashboard
+  public DashboardStats getDashboardStats() {
+    List<Sale> allSales = saleRepository.findAll();
+    List<InventoryItem> allInventory = inventoryItemRepository.findAll();
+
+    // Calculate Total Inventory Value (Stock on hand)
+    double inventoryValue = allInventory.stream()
+        .mapToDouble(item -> item.getCostPrice() * item.getQuantity())
+        .sum();
+
+    // Calculate Revenue
+    double revenue = allSales.stream()
+        .mapToDouble(Sale::getSalePrice)
+        .sum();
+
+    // Calculate Total Cost of Sold Items to find Profit
+    double costOfSoldItems = allSales.stream()
+        .mapToDouble(sale -> sale.getInventoryItem().getCostPrice())
+        .sum();
+
+    double profit = revenue - costOfSoldItems;
+
+    return new DashboardStats(
+        inventoryItemRepository.count(),
+        inventoryValue,
+        revenue,
+        profit);
   }
 }
