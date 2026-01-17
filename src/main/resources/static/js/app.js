@@ -20,12 +20,14 @@ async function fetchStats() {
   }
 }
 
-// Load stats when the page opens
-window.onload = fetchStats;
-
+// Window.onload function that calls all three: fetchStats(), fetchInventory(), and loadCategories()
+window.onload = () => {
+  fetchStats();
+  fetchInventory();
+  loadCategories(); // New call
+};
 
 // Function to fetch the inventory list and inject it into the inventory table
-
 async function fetchInventory() {
   try {
     const response = await fetch("http://localhost:8080/api/inventory");
@@ -50,7 +52,9 @@ async function fetchInventory() {
                     </td>
                     <td>$${item.costPrice.toFixed(2)}</td>
                     <td>
-                      <button class="btn btn-sm btn-primary" onclick="sellItem(${item.id})"> Sell 1      
+                      <button class="btn btn-sm btn-primary" onclick="sellItem(${
+                        item.id
+                      })"> Sell 1 </button>     
                     </td>
                 </tr>
             `;
@@ -61,16 +65,8 @@ async function fetchInventory() {
   }
 }
 
-// Update the window.onload to call both functions
-window.onload = () => {
-  fetchStats();
-  fetchInventory();
-};
-
 // The Add Product Form Logic
-document
-  .getElementById("inventoryForm")
-  .addEventListener("submit", async (e) => {
+document.getElementById("inventoryForm").addEventListener("submit", async (e) => {
     e.preventDefault(); // Prevent page reload
 
     const newItem = {
@@ -99,37 +95,90 @@ document
     }
   });
 
+// This function will ask you for the price the item is being sold for and then talk to the SaleController
+async function sellItem(inventoryItemId) {
+  const price = prompt("Enter Sale Price:");
 
-  // This function will ask you for the price the item is being sold for and then talk to the SaleController
-  async function sellItem(inventoryItemId) {
-    const price = prompt("Enter Sale Price:");
+  if (price === null || price === "") return; // User cancelled
 
-    if (price === null || price === "") return; // User cancelled
+  const saleData = {
+    inventoryItem: { id: inventoryItemId },
+    salePrice: parseFloat(price),
+    soldBy: "AdminUser",
+  };
 
-    const saleData = {
-      inventoryItem: { id: inventoryItemId },
-      salePrice: parseFloat(price),
-      soldBy: "AdminUser", 
-    };
+  try {
+    const response = await fetch("http://localhost:8080/api/sales", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(saleData),
+    });
 
-    try {
-      const response = await fetch("http://localhost:8080/api/sales", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(saleData),
-      });
-
-      if (response.ok) {
-        alert("Sale recorded successfully!");
-        fetchStats(); // Refresh the dashboard numbers
-        fetchInventory(); // Refresh the table quantities
-      } else {
-        const error = await response.json();
-        alert(
-          "Error recording sale: " + (error.message || "Check stock levels.")
-        );
-      }
-    } catch (error) {
-      console.error("Error:", error);
+    if (response.ok) {
+      alert("Sale recorded successfully!");
+      fetchStats(); // Refresh the dashboard numbers
+      fetchInventory(); // Refresh the table quantities
+    } else {
+      const error = await response.json();
+      alert(
+        "Error recording sale: " + (error.message || "Check stock levels.")
+      );
     }
+  } catch (error) {
+    console.error("Error:", error);
   }
+}
+
+// Loading Categories
+async function loadCategories() {
+  const select = document.getElementById("prodCategory");
+  select.innerHTML = '<option value="">Loading categories...</option>'; // Visual feedback
+
+  try {
+    const response = await fetch("http://localhost:8080/api/categories");
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const categories = await response.json();
+    console.log("Categories found:", categories); // This will show in your F12 Console
+
+    select.innerHTML = '<option value="">Select a Category</option>';
+
+    if (categories.length === 0) {
+      select.innerHTML = '<option value="">No categories found in DB</option>';
+    } else {
+      categories.forEach((cat) => {
+        select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+      });
+    }
+  } catch (error) {
+    console.error("Error loading categories:", error);
+    select.innerHTML = '<option value="">Error loading data</option>';
+  }
+}
+
+// Event Listener for the new Product Form
+document.getElementById("productForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const productData = {
+    name: document.getElementById("prodName").value,
+    brand: document.getElementById("prodBrand").value,
+    description: document.getElementById("prodDescription").value,
+    category: { id: document.getElementById("prodCategory").value },
+  };
+
+  const response = await fetch("http://localhost:8080/api/products", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(productData),
+  });
+
+  if (response.ok) {
+    alert("Product created! Now you can add inventory for it.");
+    location.reload();
+  } else {
+    alert("Error creating product. Please try again.");
+  }
+});
