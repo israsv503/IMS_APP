@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMS Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="bg-light">
+
+  <nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+      <span class="navbar-brand mb-0 h1">Inventory Management System</span>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2 class="mb-4">Business Overview</h2>
+
+    <div class="mt-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Current Inventory</h3>
+        <button class="btn btn-outline-success" onclick="location.reload()">Refresh Table</button>
+      </div>
+    
+      <div class="table-responsive bg-white shadow-sm p-3 rounded">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Product</th>
+              <th>Brand</th>
+              <th>SKU</th>
+              <th>Specifications</th>
+              <th>Quantity</th>
+              <th>Cost Price</th>
+            </tr>
+          </thead>
+          <tbody id="inventoryTableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="row text-center">
+      <div class="col-md-3">
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <h6 class="text-muted">Total Products</h6>
+            <h3 id="totalItems">0</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm mb-4 border-primary">
+          <div class="card-body">
+            <h6 class="text-muted">Stock Value</h6>
+            <h3 id="totalValue">$0.00</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm mb-4 border-success">
+          <div class="card-body">
+            <h6 class="text-muted">Total Revenue</h6>
+            <h3 id="totalRevenue" class="text-success">$0.00</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm mb-4 border-info">
+          <div class="card-body">
+            <h6 class="text-muted">Net Profit</h6>
+            <h3 id="totalProfit" class="text-info">$0.00</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-5">
+      <button class="btn btn-primary" onclick="fetchStats()">Refresh Data</button>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+
+</html>
