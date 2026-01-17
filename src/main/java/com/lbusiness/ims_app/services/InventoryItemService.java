@@ -17,7 +17,17 @@ public class InventoryItemService {
     return inventoryItemRepository.findAll();
   }
 
-  public InventoryItem saveItem(InventoryItem item) {
-    return inventoryItemRepository.save(item);
+  public InventoryItem saveItem(InventoryItem newItem) {
+    // 1. Check if an item with this SKU already exists
+    return inventoryItemRepository.findBySku(newItem.getSku())
+        .map(existingItem -> {
+          // 2. If it exists, just increase the quantity
+          existingItem.setQuantity(existingItem.getQuantity() + newItem.getQuantity());
+          return inventoryItemRepository.save(existingItem);
+        })
+        .orElseGet(() -> {
+          // 3. If it doesn't exist, save it as a new row
+          return inventoryItemRepository.save(newItem);
+        });
   }
 }
