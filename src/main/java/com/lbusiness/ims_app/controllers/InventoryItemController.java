@@ -28,4 +28,13 @@ public class InventoryItemController {
     return inventoryItemService.saveItem(item);
   }
 
+  /**
+   * REST endpoint to delete a specific inventory item.
+   * * @param id The ID of the item passed as a path variable.
+   */
+  @DeleteMapping("/{id}")
+  public void delete(@PathVariable Long id) {
+    inventoryItemService.deleteItem(id);
+  }
+
 }

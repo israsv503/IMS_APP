@@ -30,4 +30,13 @@ public class InventoryItemService {
           return inventoryItemRepository.save(newItem);
         });
   }
+
+  /**
+   * Deletes an inventory item from the database by its unique ID.
+   * This operation is final and will remove the stock record.
+   * * @param id The ID of the inventory item to be removed.
+   */
+  public void deleteItem(Long id) {
+    inventoryItemRepository.deleteById(id);
+  }
 }

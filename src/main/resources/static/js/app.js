@@ -54,7 +54,10 @@ async function fetchInventory() {
                     <td>
                       <button class="btn btn-sm btn-primary" onclick="sellItem(${
                         item.id
-                      })"> Sell 1 </button>     
+                      })"> Sell 1 </button>
+                      <button class="btn btn-sm btn-danger" onclick="deleteItem(${
+                        item.id
+                      })">Delete</button>     
                     </td>
                 </tr>
             `;
@@ -182,3 +185,31 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
     alert("Error creating product. Please try again.");
   }
 });
+
+/**
+ * Sends a DELETE request to the API to remove a specific inventory record.
+ * Includes a user confirmation guardrail to prevent accidental data loss.
+ * * @param {number} id - The ID of the inventory item to delete.
+ */
+async function deleteItem(id) {
+    // Professional UX: Always confirm before destructive actions
+    if (!confirm("Are you sure you want to delete this item? This will remove all stock records for this SKU.")) {
+        return; 
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/inventory/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            // Refreshing the UI ensures the user sees the immediate impact on stock/profit
+            fetchStats();
+            fetchInventory();
+        } else {
+            alert("Failed to delete the item. Please try again.");
+        }
+    } catch (error) {
+        console.error('Error during deletion:', error);
+    }
+}
