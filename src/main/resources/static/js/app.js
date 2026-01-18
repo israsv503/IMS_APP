@@ -1,3 +1,20 @@
+/**
+ * Security Check: Verifies if a user session exists.
+ * Redirects to login page if no authenticated user is found.
+ */
+function checkAuth() {
+  const user = sessionStorage.getItem("loggedUser");
+  if (!user) {
+    window.location.href = "login.html";
+  } else {
+    const userData = JSON.parse(user);
+    console.log("Welcome back, " + userData.username);
+  }
+}
+
+// Run the check before anything else
+checkAuth();
+
 async function fetchStats() {
   try {
     const response = await fetch("http://localhost:8080/api/dashboard/stats");
@@ -69,7 +86,9 @@ async function fetchInventory() {
 }
 
 // The Add Product Form Logic
-document.getElementById("inventoryForm").addEventListener("submit", async (e) => {
+document
+  .getElementById("inventoryForm")
+  .addEventListener("submit", async (e) => {
     e.preventDefault(); // Prevent page reload
 
     const newItem = {
@@ -192,24 +211,28 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
  * * @param {number} id - The ID of the inventory item to delete.
  */
 async function deleteItem(id) {
-    // Professional UX: Always confirm before destructive actions
-    if (!confirm("Are you sure you want to delete this item? This will remove all stock records for this SKU.")) {
-        return; 
-    }
+  // Professional UX: Always confirm before destructive actions
+  if (
+    !confirm(
+      "Are you sure you want to delete this item? This will remove all stock records for this SKU."
+    )
+  ) {
+    return;
+  }
 
-    try {
-        const response = await fetch(`http://localhost:8080/api/inventory/${id}`, {
-            method: 'DELETE'
-        });
+  try {
+    const response = await fetch(`http://localhost:8080/api/inventory/${id}`, {
+      method: "DELETE",
+    });
 
-        if (response.ok) {
-            // Refreshing the UI ensures the user sees the immediate impact on stock/profit
-            fetchStats();
-            fetchInventory();
-        } else {
-            alert("Failed to delete the item. Please try again.");
-        }
-    } catch (error) {
-        console.error('Error during deletion:', error);
+    if (response.ok) {
+      // Refreshing the UI ensures the user sees the immediate impact on stock/profit
+      fetchStats();
+      fetchInventory();
+    } else {
+      alert("Failed to delete the item. Please try again.");
     }
+  } catch (error) {
+    console.error("Error during deletion:", error);
+  }
 }
