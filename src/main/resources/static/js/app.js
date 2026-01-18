@@ -38,11 +38,13 @@ async function fetchStats() {
   }
 }
 
-// Window.onload function that calls all three: fetchStats(), fetchInventory(), and loadCategories()
+// Window.onload function
 window.onload = () => {
+  checkAuth();
   fetchStats();
   fetchInventory();
   loadCategories(); // New call
+  fetchSales();
 };
 
 // Function to fetch the inventory list and inject it into the inventory table
@@ -243,3 +245,45 @@ async function deleteItem(id) {
     console.error("Error during deletion:", error);
   }
 }
+
+/**
+ * Clears the user's session data and redirects to the login page.
+ * This effectively "signs out" the partner and protects the dashboard.
+ */
+function logout() {
+    // Professional practice: Clear the specific session key
+    sessionStorage.removeItem('loggedUser');
+    
+    // Redirect the user back to the gatekeeper
+    window.location.href = 'login.html';
+}
+
+/**
+ * Fetches the most recent sales from the API and displays them.
+ * Provides transparency for partners to see recent business activity.
+ */
+async function fetchSales() {
+    try {
+        const response = await fetch('http://localhost:8080/api/sales');
+        const sales = await response.json();
+        const tableBody = document.getElementById('salesTableBody');
+        tableBody.innerHTML = '';
+
+        // Show the last 5 sales (reversed to show newest first)
+        sales.reverse().slice(0, 5).forEach(sale => {
+            const row = `
+                <tr>
+                    <td>${sale.inventoryItem.product.name}</td>
+                    <td class="text-success fw-bold">$${sale.salePrice.toFixed(2)}</td>
+                    <td>${sale.soldBy}</td>
+                    <td>${new Date(sale.saleDate).toLocaleDateString()}</td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+    } catch (error) {
+        console.error('Error fetching sales:', error);
+    }
+}
+
+

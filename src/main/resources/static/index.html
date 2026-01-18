@@ -15,6 +15,7 @@
     <div class="container">
       <span class="navbar-brand mb-0 h1">Inventory Management System</span>
       <span id="userWelcome" class="text-light small"></span>
+      <button class="btn btn-sm btn-outline-danger" onclick="logout()">Sign Out</button>
     </div>
   </nav>
 
@@ -43,6 +44,25 @@
             </tr>
           </thead>
           <tbody id="inventoryTableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Table to show the last few sales. This helps your partners confirm their sale was recorded. -->
+    <div class="mt-5 mb-5">
+      <h3>Recent Sales</h3>
+      <div class="table-responsive bg-white shadow-sm p-3 rounded">
+        <table class="table table-sm">
+          <thead class="table-light">
+            <tr>
+              <th>Item</th>
+              <th>Sold For</th>
+              <th>Sold By</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="salesTableBody">
           </tbody>
         </table>
       </div>
