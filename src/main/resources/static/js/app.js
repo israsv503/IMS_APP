@@ -8,7 +8,8 @@ function checkAuth() {
     window.location.href = "login.html";
   } else {
     const userData = JSON.parse(user);
-    console.log("Welcome back, " + userData.username);
+    // Display the partner's name in the navbar
+    document.getElementById("userWelcome").innerText = "Logged in as: " + userData.username;
   }
 }
 
@@ -117,38 +118,44 @@ document
     }
   });
 
-// This function will ask you for the price the item is being sold for and then talk to the SaleController
+
+
+/**
+ * Records a sale by linking the current logged-in partner's name.
+ * Automatically pulls the username from sessionStorage for audit purposes.
+ * @param {number} inventoryItemId - The ID of the item being sold.
+ */
 async function sellItem(inventoryItemId) {
-  const price = prompt("Enter Sale Price:");
+    const price = prompt("Enter Sale Price:");
+    if (price === null || price === "") return;
 
-  if (price === null || price === "") return; // User cancelled
+    // Retrieve the user object from session storage
+    const sessionUser = JSON.parse(sessionStorage.getItem('loggedUser'));
+    const currentUsername = sessionUser ? sessionUser.username : "Unknown";
 
-  const saleData = {
-    inventoryItem: { id: inventoryItemId },
-    salePrice: parseFloat(price),
-    soldBy: "AdminUser",
-  };
+    const saleData = {
+        inventoryItem: { id: inventoryItemId },
+        salePrice: parseFloat(price),
+        soldBy: currentUsername // Automatically assigned based on login
+    };
 
-  try {
-    const response = await fetch("http://localhost:8080/api/sales", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(saleData),
-    });
+    try {
+        const response = await fetch('http://localhost:8080/api/sales', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(saleData)
+        });
 
-    if (response.ok) {
-      alert("Sale recorded successfully!");
-      fetchStats(); // Refresh the dashboard numbers
-      fetchInventory(); // Refresh the table quantities
-    } else {
-      const error = await response.json();
-      alert(
-        "Error recording sale: " + (error.message || "Check stock levels.")
-      );
+        if (response.ok) {
+            alert(`Sale recorded successfully by ${currentUsername}!`);
+            fetchStats();
+            fetchInventory();
+        } else {
+            alert('Error recording sale. Please check stock levels.');
+        }
+    } catch (error) {
+        console.error('Error during sale:', error);
     }
-  } catch (error) {
-    console.error("Error:", error);
-  }
 }
 
 // Loading Categories
