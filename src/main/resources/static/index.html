@@ -19,8 +19,49 @@
     </div>
   </nav>
 
+  <!-- Business Overview -->
+
   <div class="container">
     <h2 class="mb-4">Business Overview</h2>
+
+    <div class="row text-center">
+      <div class="col-md-3">
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <h6 class="text-muted">Total Products</h6>
+            <h3 id="totalItems">0</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm mb-4 border-primary">
+          <div class="card-body">
+            <h6 class="text-muted">Stock Value</h6>
+            <h3 id="totalValue">$0.00</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm mb-4 border-success">
+          <div class="card-body">
+            <h6 class="text-muted">Total Revenue</h6>
+            <h3 id="totalRevenue" class="text-success">$0.00</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card shadow-sm mb-4 border-info">
+          <div class="card-body">
+            <h6 class="text-muted">Net Profit</h6>
+            <h3 id="totalProfit" class="text-info">$0.00</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-1">
+      <button class="btn btn-primary" onclick="fetchStats()">Refresh Data</button>
+    </div>
 
     <div class="mt-5">
       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -78,44 +119,7 @@
       </div>
     </div>
 
-    <div class="row text-center">
-      <div class="col-md-3">
-        <div class="card shadow-sm mb-4">
-          <div class="card-body">
-            <h6 class="text-muted">Total Products</h6>
-            <h3 id="totalItems">0</h3>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card shadow-sm mb-4 border-primary">
-          <div class="card-body">
-            <h6 class="text-muted">Stock Value</h6>
-            <h3 id="totalValue">$0.00</h3>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card shadow-sm mb-4 border-success">
-          <div class="card-body">
-            <h6 class="text-muted">Total Revenue</h6>
-            <h3 id="totalRevenue" class="text-success">$0.00</h3>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card shadow-sm mb-4 border-info">
-          <div class="card-body">
-            <h6 class="text-muted">Net Profit</h6>
-            <h3 id="totalProfit" class="text-info">$0.00</h3>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="mt-5">
-      <button class="btn btn-primary" onclick="fetchStats()">Refresh Data</button>
-    </div>
+    
   </div>
 
   <div class="modal fade" id="addInventoryModal" tabindex="-1" aria-hidden="true">

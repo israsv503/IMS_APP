@@ -57,27 +57,22 @@ async function fetchInventory() {
     tableBody.innerHTML = ""; // Clear current rows
 
     inventory.forEach((item) => {
+      // Check if stock is low (threshold of 3)
+      const isLowStock = item.quantity <= 3;
+      const stockClass = isLowStock ? "text-danger fw-bold" : "text-dark";
+      const alertBadge = isLowStock ? '<span class="badge bg-danger ms-1">Low!</span>' : "";
+
       const row = `
                 <tr>
                     <td>${item.product.name}</td>
                     <td>${item.product.brand}</td>
                     <td><span class="badge bg-secondary">${item.sku}</span></td>
                     <td>${item.specifications}</td>
-                    <td>
-                        <span class="fw-bold ${
-                          item.quantity < 3 ? "text-danger" : "text-dark"
-                        }">
-                            ${item.quantity}
-                        </span>
-                    </td>
+                    <td class="${stockClass}">${item.quantity} ${alertBadge}</td>
                     <td>$${item.costPrice.toFixed(2)}</td>
                     <td>
-                      <button class="btn btn-sm btn-primary" onclick="sellItem(${
-                        item.id
-                      })"> Sell 1 </button>
-                      <button class="btn btn-sm btn-danger" onclick="deleteItem(${
-                        item.id
-                      })">Delete</button>     
+                      <button class="btn btn-sm btn-primary" onclick="sellItem(${item.id})">Sell 1</button>
+                      <button class="btn btn-sm btn-danger" onclick="deleteItem(${item.id})">Delete</button>     
                     </td>
                 </tr>
             `;
