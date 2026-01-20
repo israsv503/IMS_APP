@@ -40,11 +40,11 @@ async function fetchStats() {
 
 // Window.onload function
 window.onload = () => {
-  checkAuth();
   fetchStats();
   fetchInventory();
   loadCategories(); // New call
   fetchSales();
+  fetchPerformanceReport();
 };
 
 // Function to fetch the inventory list and inject it into the inventory table
@@ -285,5 +285,39 @@ async function fetchSales() {
         console.error('Error fetching sales:', error);
     }
 }
+
+/**
+ * Fetches and displays the profit contribution of each partner.
+ */
+async function fetchPerformanceReport() {
+    try {
+        const response = await fetch('http://localhost:8080/api/sales/report');
+        const data = await response.json();
+        const reportDiv = document.getElementById('performanceReport');
+        reportDiv.innerHTML = '';
+
+        data.forEach(stat => {
+            const card = `
+                <div class="col-md-4">
+                    <div class="card border-left-primary h-100 py-2">
+                        <div class="card-body">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                ${stat.seller}</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                Profit: $${parseFloat(stat.net_profit).toFixed(2)}
+                            </div>
+                            <small class="text-muted">Total Rev: $${parseFloat(stat.total_sales).toFixed(2)}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+            reportDiv.innerHTML += card;
+        });
+    } catch (error) {
+        console.error('Error fetching report:', error);
+    }
+}
+
+
 
 
