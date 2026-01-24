@@ -1,6 +1,7 @@
 package com.lbusiness.ims_app.services;
 
 import com.lbusiness.ims_app.models.User;
+import java.util.List;
 import com.lbusiness.ims_app.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -36,5 +37,19 @@ public class UserService {
 
   public Optional<User> findByUsername(String username) {
     return userRepository.findByUsername(username);
+  }
+
+  /**
+   * Retrieves all registered users.
+   */
+  public List<User> getAllUsers() {
+    return userRepository.findAll();
+  }
+
+  /**
+   * Deletes a user by their ID.
+   */
+  public void deleteUser(Long id) {
+    userRepository.deleteById(id);
   }
 }

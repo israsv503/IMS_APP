@@ -8,6 +8,21 @@ function checkAuth() {
     window.location.href = "login.html";
   } else {
     const userData = JSON.parse(user);
+
+    // --- NEW: Role-Based Navigation ---
+    // If the user is NOT an admin, hide the Manage Users link
+    const isAdmin = userData.roles.includes("ROLE_ADMIN");
+    const adminLink = document.getElementById("adminLink");
+
+    if (adminLink && !isAdmin) {
+      adminLink.style.display = "none"; // Hide the link from partners
+
+      // If a partner tries to type users.html in the URL, kick them out
+      if (window.location.pathname.includes("users.html")) {
+        window.location.href = "index.html";
+      }
+    }
+
     // Safety check: only update welcome text if the element exists on this page
     const welcomeEl = document.getElementById("userWelcome");
     if (welcomeEl) {
@@ -24,19 +39,20 @@ checkAuth();
  * Ensures functions only run if the required HTML elements exist on the current page.
  */
 window.onload = () => {
-  // 1. Dashboard Logic (index.html)
-  // We check for 'totalItems' as a signal that we are on the Dashboard
-  if (document.getElementById("totalItems")) {
+  checkAuth();
+
+  const path = window.location.pathname;
+  const page = path.split("/").pop();
+
+  if (page === "index.html" || page === "") {
     fetchStats();
     fetchSales();
     fetchPerformanceReport();
-  }
-
-  // 2. Inventory Logic (inventory.html)
-  // We check for 'inventoryTableBody' as a signal we are on the Inventory page
-  if (document.getElementById("inventoryTableBody")) {
+  } else if (page === "inventory.html") {
     fetchInventory();
-    loadCategories(); // Categories needed for modals on this page
+    loadCategories();
+  } else if (page === "users.html") {
+    fetchUsers(); // New logic for the Users page
   }
 };
 
@@ -249,4 +265,50 @@ async function fetchPerformanceReport() {
   } catch (error) {
     console.error("Error fetching report:", error);
   }
+}
+
+/**
+ * Fetches all system users and displays them in the management table.
+ * Includes a delete button for administrative control.
+ */
+async function fetchUsers() {
+    try {
+        const response = await fetch('http://localhost:8080/api/users');
+        const users = await response.json();
+        const tableBody = document.getElementById('userTableBody');
+        if (!tableBody) return;
+
+        tableBody.innerHTML = '';
+        users.forEach(user => {
+            const row = `
+                <tr>
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td><span class="badge bg-info text-dark">${user.roles.join(', ')}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">Remove Access</button>
+                    </td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+    }
+}
+
+/**
+ * Administrative action to delete a user account.
+ */
+async function deleteUser(id) {
+    if (!confirm("Are you sure you want to remove this user's access?")) return;
+    try {
+        const response = await fetch(`http://localhost:8080/api/users/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            alert("User removed.");
+            fetchUsers(); // Refresh the list
+        }
+    } catch (error) {
+        console.error('Error deleting user:', error);
+    }
 }
