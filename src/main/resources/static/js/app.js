@@ -312,3 +312,34 @@ async function deleteUser(id) {
         console.error('Error deleting user:', error);
     }
 }
+
+
+// Event listener to handle the new user form submission
+const userRegForm = document.getElementById("userRegistrationForm");
+if (userRegForm) {
+    userRegForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const userData = {
+            username: document.getElementById("regUsername").value,
+            email: document.getElementById("regEmail").value,
+            password: document.getElementById("regPassword").value
+        };
+
+        try {
+            const response = await fetch('http://localhost:8080/api/users/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+
+            if (response.ok) {
+                alert("New partner account created!");
+                location.reload();
+            } else {
+                alert("Could not create user. Username/Email might be taken.");
+            }
+        } catch (error) {
+            console.error("Registration error:", error);
+        }
+    });
+}
