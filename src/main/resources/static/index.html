@@ -4,196 +4,85 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IMS Dashboard</title>
+  <title>IMS - Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body class="bg-light">
 
-  <nav class="navbar navbar-dark bg-dark mb-4">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
-      <span class="navbar-brand mb-0 h1">Inventory Management System</span>
-      <span id="userWelcome" class="text-light small"></span>
-      <button class="btn btn-sm btn-outline-danger" onclick="logout()">Sign Out</button>
+      <a class="navbar-brand" href="index.html">IMS Dashboard</a>
+      <div class="navbar-nav me-auto">
+        <a class="nav-link active" href="index.html">Dashboard</a>
+        <a class="nav-link" href="inventory.html">Manage Inventory</a>
+      </div>
+      <div class="d-flex align-items-center">
+        <span id="userWelcome" class="text-light small me-3"></span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()">Sign Out</button>
+      </div>
     </div>
   </nav>
-
-  <!-- Business Overview -->
 
   <div class="container">
     <h2 class="mb-4">Business Overview</h2>
 
-    <div class="row text-center">
+    <div class="row g-3 mb-5">
       <div class="col-md-3">
-        <div class="card shadow-sm mb-4">
-          <div class="card-body">
-            <h6 class="text-muted">Total Products</h6>
-            <h3 id="totalItems">0</h3>
-          </div>
+        <div class="card shadow-sm border-0 bg-primary text-white p-3">
+          <h6 class="small text-uppercase">Total Items</h6>
+          <h3 id="totalItems" class="mb-0">0</h3>
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card shadow-sm mb-4 border-primary">
-          <div class="card-body">
-            <h6 class="text-muted">Stock Value</h6>
-            <h3 id="totalValue">$0.00</h3>
-          </div>
+        <div class="card shadow-sm border-0 bg-success text-white p-3">
+          <h6 class="small text-uppercase">Inventory Value</h6>
+          <h3 id="totalValue" class="mb-0">$0.00</h3>
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card shadow-sm mb-4 border-success">
-          <div class="card-body">
-            <h6 class="text-muted">Total Revenue</h6>
-            <h3 id="totalRevenue" class="text-success">$0.00</h3>
-          </div>
+        <div class="card shadow-sm border-0 bg-info text-white p-3">
+          <h6 class="small text-uppercase">Total Revenue</h6>
+          <h3 id="totalRevenue" class="mb-0">$0.00</h3>
         </div>
       </div>
       <div class="col-md-3">
-        <div class="card shadow-sm mb-4 border-info">
-          <div class="card-body">
-            <h6 class="text-muted">Net Profit</h6>
-            <h3 id="totalProfit" class="text-info">$0.00</h3>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="mt-1">
-      <button class="btn btn-primary" onclick="fetchStats()">Refresh Data</button>
-    </div>
-
-    <div class="mt-5">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Current Inventory</h3>
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addInventoryModal">+ Add Item</button>
-        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addProductModal" onclick="loadCategories()">New Product Type</button>
-        <button class="btn btn-outline-success" onclick="location.reload()">Refresh Table</button>
-      </div>
-    
-      <div class="table-responsive bg-white shadow-sm p-3 rounded">
-        <table class="table table-hover">
-          <thead class="table-light">
-            <tr>
-              <th>Product</th>
-              <th>Brand</th>
-              <th>SKU</th>
-              <th>Specifications</th>
-              <th>Quantity</th>
-              <th>Cost Price</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="inventoryTableBody">
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Table to show the last few sales. This helps your partners confirm their sale was recorded. -->
-    <div class="mt-5 mb-5">
-      <h3>Recent Sales</h3>
-      <div class="table-responsive bg-white shadow-sm p-3 rounded">
-        <table class="table table-sm">
-          <thead class="table-light">
-            <tr>
-              <th>Item</th>
-              <th>Sold For</th>
-              <th>Sold By</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody id="salesTableBody">
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- The "Reports" UI to show Partner Name, Total Revenue, and Contribution to Profit  (per partner)-->
-
-    <div class="mt-5 mb-5">
-      <h3>Partner Performance Report</h3>
-      <div class="bg-white shadow-sm p-4 rounded">
-        <div id="performanceReport" class="row">
+        <div class="card shadow-sm border-0 bg-warning text-dark p-3">
+          <h6 class="small text-uppercase">Net Profit</h6>
+          <h3 id="totalProfit" class="mb-0">$0.00</h3>
         </div>
       </div>
     </div>
 
-    
-  </div>
-
-  <div class="modal fade" id="addInventoryModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Add New Inventory Item</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="row">
+      <div class="col-md-8">
+        <h3>Partner Performance</h3>
+        <div id="performanceReport" class="row g-3">
         </div>
-        <div class="modal-body">
-          <form id="inventoryForm">
-            <div class="mb-3">
-              <label class="form-label">Product ID (Existing)</label>
-              <input type="number" id="formProductId" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">SKU</label>
-              <input type="text" id="formSku" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Specifications (Size, Color, etc.)</label>
-              <input type="text" id="formSpecs" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Quantity</label>
-              <input type="number" id="formQuantity" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Cost Price ($)</label>
-              <input type="number" step="0.01" id="formCost" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Save Item</button>
-          </form>
+      </div>
+
+      <div class="col-md-4">
+        <h3>Recent Sales</h3>
+        <div class="table-responsive bg-white shadow-sm p-3 rounded">
+          <table class="table table-sm">
+            <thead class="table-light">
+              <tr>
+                <th>Item</th>
+                <th>Price</th>
+                <th>By</th>
+              </tr>
+            </thead>
+            <tbody id="salesTableBody">
+            </tbody>
+          </table>
+        </div>
+        <div class="text-end mt-2">
+          <small class="text-muted italic">Showing last 5 transactions</small>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal specifically for creating Products -->
-  <div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Create New Product Catalog Entry</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="productForm">
-            <div class="mb-3">
-              <label class="form-label">Product Name</label>
-              <input type="text" id="prodName" class="form-control" placeholder="e.g. Air Jordan 1" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Brand</label>
-              <input type="text" id="prodBrand" class="form-control" placeholder="e.g. Nike" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Description</label>
-              <textarea id="prodDescription" class="form-control" rows="2"
-                placeholder="e.g. Premium leather, limited edition"></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Category</label>
-              <select id="prodCategory" class="form-select" required>
-              </select>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Create Product</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/app.js"></script>
 </body>
