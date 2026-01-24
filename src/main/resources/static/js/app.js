@@ -314,16 +314,27 @@ async function deleteUser(id) {
 }
 
 
-// Event listener to handle the new user form submission
+/**
+ * Handles the administrative creation of new partner accounts.
+ * Includes validation checks and proactive error feedback.
+ */
 const userRegForm = document.getElementById("userRegistrationForm");
 if (userRegForm) {
     userRegForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const userData = {
-            username: document.getElementById("regUsername").value,
-            email: document.getElementById("regEmail").value,
-            password: document.getElementById("regPassword").value
-        };
+        
+        // 1. Gather data from the form
+        const username = document.getElementById("regUsername").value;
+        const email = document.getElementById("regEmail").value;
+        const password = document.getElementById("regPassword").value;
+
+        // 2. Simple Frontend Validation (Guardrail)
+        if (password.length < 6) {
+            alert("Security Error: Password must be at least 6 characters long.");
+            return;
+        }
+
+        const userData = { username, email, password };
 
         try {
             const response = await fetch('http://localhost:8080/api/users/register', {
@@ -333,13 +344,20 @@ if (userRegForm) {
             });
 
             if (response.ok) {
-                alert("New partner account created!");
-                location.reload();
+                // Success Scenario
+                alert(`Success! Partner account for '${username}' has been created.`);
+                
+                // Professional Touch: Reset the form and reload to show the new user in the table
+                userRegForm.reset();
+                location.reload(); 
             } else {
-                alert("Could not create user. Username/Email might be taken.");
+                // Error Scenario (usually 400 Bad Request from our Controller)
+                const errorMsg = await response.text();
+                alert(`Registration Failed: ${errorMsg || "Username or Email is already taken."}`);
             }
         } catch (error) {
-            console.error("Registration error:", error);
+            console.error("Critical registration error:", error);
+            alert("Network Error: Could not reach the server. Please try again later.");
         }
     });
 }

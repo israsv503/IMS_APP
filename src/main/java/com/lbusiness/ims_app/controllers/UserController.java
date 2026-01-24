@@ -3,6 +3,7 @@ package com.lbusiness.ims_app.controllers;
 
 import com.lbusiness.ims_app.services.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import com.lbusiness.ims_app.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -32,12 +33,13 @@ public class UserController {
   @PostMapping("/register")
   public ResponseEntity<?> register(@RequestBody User user) {
       try {
-          // Default role for new users is ROLE_USER
           user.setRoles(Set.of("ROLE_USER"));
-          User savedUser = userService.registerUser(user);
-          return ResponseEntity.ok(savedUser);
-      } catch (Exception e) {
-          return ResponseEntity.badRequest().body("Error: Username or Email already exists.");
+          userService.registerUser(user);
+          return ResponseEntity.ok("User registered successfully");
+      } catch (RuntimeException e) {
+          // This catches the custom exception we built earlier (e.g., "Username already taken")
+          // and sends the specific message back to the frontend alert.
+          return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
       }
   }
 }
