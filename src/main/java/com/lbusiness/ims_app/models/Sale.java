@@ -30,6 +30,17 @@ public class Sale {
   // We will link this to the User entity later when we do Security
   private String soldBy;
 
+  // --- NEW BUSINESS FIELDS ---
+
+  @Column(nullable = false)
+  private Integer quantity; // To handle selling multiple pairs at once
+
+  @Column(nullable = false)
+  private String paymentStatus; // e.g., "PAID" or "CREDIT"
+
+  @Column(columnDefinition = "TEXT")
+  private String notes; // To store the "Why" behind credit or special sales
+
   @PrePersist
   protected void onCreate() {
     this.saleDate = LocalDateTime.now(); // Automatically sets the date when saved

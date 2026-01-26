@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.lbusiness.ims_app.dto.DashboardStats;
-import com.lbusiness.ims_app.models.Product;
-
 import java.util.List;
 
 @Service
@@ -25,43 +23,43 @@ public class SaleService {
     return saleRepository.findAll();
   }
 
-  @Transactional // Ensures that if one part fails, the whole process rolls back
+  @Transactional
   public Sale processSale(Sale sale) {
     // 1. Find the item being sold
     InventoryItem item = inventoryItemRepository.findById(sale.getInventoryItem().getId())
         .orElseThrow(() -> new RuntimeException("Item not found"));
 
-    // 2. Check if we have enough stock
-    if (item.getQuantity() < 1) {
-      throw new RuntimeException("Out of stock!");
+    // 2. NEW: Check if we have enough stock for the requested QUANTITY
+    if (item.getQuantity() < sale.getQuantity()) {
+      throw new RuntimeException("Insufficient stock! Only " + item.getQuantity() + " available.");
     }
 
-    // 3. Decrease the inventory quantity
-    item.setQuantity(item.getQuantity() - 1);
+    // 3. Decrease the inventory by the specific amount sold
+    item.setQuantity(item.getQuantity() - sale.getQuantity());
     inventoryItemRepository.save(item);
 
-    // 4. Save the sale record
+    // 4. Save the sale record (Quantity, Status, and Notes are now included)
     return saleRepository.save(sale);
   }
 
-  // Methods for the results sent to the Dashboard
   public DashboardStats getDashboardStats() {
     List<Sale> allSales = saleRepository.findAll();
     List<InventoryItem> allInventory = inventoryItemRepository.findAll();
 
-    // Calculate Total Inventory Value (Stock on hand)
     double inventoryValue = allInventory.stream()
         .mapToDouble(item -> item.getCostPrice() * item.getQuantity())
         .sum();
 
-    // Calculate Revenue
+    // UPDATED REVENUE: Only count sales where status is 'PAID'
     double revenue = allSales.stream()
-        .mapToDouble(Sale::getSalePrice)
+        .filter(sale -> "PAID".equals(sale.getPaymentStatus())) // Filter logic
+        .mapToDouble(sale -> sale.getSalePrice() * sale.getQuantity())
         .sum();
 
-    // Calculate Total Cost of Sold Items to find Profit
+    // UPDATED COST: Only count cost for the items we actually got paid for
     double costOfSoldItems = allSales.stream()
-        .mapToDouble(sale -> sale.getInventoryItem().getCostPrice())
+        .filter(sale -> "PAID".equals(sale.getPaymentStatus())) // Filter logic
+        .mapToDouble(sale -> sale.getInventoryItem().getCostPrice() * sale.getQuantity())
         .sum();
 
     double profit = revenue - costOfSoldItems;

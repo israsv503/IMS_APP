@@ -14,10 +14,13 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
    * Professional Query to Group total sales and profit by the partner's name.
    * We use a List of Maps to send structured data to the frontend.
    */
-  @Query(value = "SELECT sold_by as seller, SUM(sale_price) as total_sales, " +
-      "SUM(sale_price - cost_price) as net_profit " +
-      "FROM sales s JOIN inventory_items i ON s.inventory_item_id = i.id " +
-      "GROUP BY sold_by", nativeQuery = true)
-  List<Map<String, Object>> getSalesPerformanceReport();
+  @Query(value = "SELECT s.sold_by AS seller, " +
+      "SUM(s.sale_price * s.quantity) AS total_sales, " +
+      "SUM((s.sale_price - i.cost_price) * s.quantity) AS net_profit " +
+      "FROM sales s " +
+      "JOIN inventory_items i ON s.inventory_item_id = i.id " +
+      "WHERE s.payment_status = 'PAID' " + // The critical filter
+      "GROUP BY s.sold_by", nativeQuery = true)
+  List<Object[]> getPerformanceReport();
 
 }

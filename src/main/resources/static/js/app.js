@@ -53,6 +53,9 @@ window.onload = () => {
     loadCategories();
   } else if (page === "users.html") {
     fetchUsers(); // New logic for the Users page
+    fetchManagementCategories();
+  } else if (page === "sales.html") {
+    fetchFullSalesHistory();
   }
 };
 
@@ -100,7 +103,7 @@ async function fetchInventory() {
                     <td class="${stockClass}">${item.quantity} ${alertBadge}</td>
                     <td>$${item.costPrice.toFixed(2)}</td>
                     <td>
-                      <button class="btn btn-sm btn-primary" onclick="sellItem(${item.id})">Sell 1</button>
+                      <button class="btn btn-sm btn-primary" onclick="openSaleModal(${item.id}, '${item.product.name}', ${item.quantity})">Sell</button>
                       <button class="btn btn-sm btn-danger" onclick="deleteItem(${item.id})">Delete</button>     
                     </td>
                 </tr>
@@ -239,11 +242,31 @@ async function fetchSales() {
     const tableBody = document.getElementById("salesTableBody");
     if (!tableBody) return;
     tableBody.innerHTML = "";
-    sales
-      .reverse()
-      .slice(0, 5)
-      .forEach((sale) => {
-        const row = `<tr><td>${sale.inventoryItem.product.name}</td><td class="text-success fw-bold">$${sale.salePrice.toFixed(2)}</td><td>${sale.soldBy}</td><td>${new Date(sale.saleDate).toLocaleDateString()}</td></tr>`;
+    // Show last 5 sales with enhanced details
+    sales.reverse().slice(0, 5).forEach((sale) => {
+        // Logic to color-code the status
+        const statusClass =
+          sale.paymentStatus === "PAID" ? "bg-success" : "bg-warning text-dark";
+
+        const row = `
+                <tr>
+                    <td>
+                        <div class="fw-bold">${sale.inventoryItem.product.name}</div>
+                        <div class="text-muted small">Qty: ${sale.quantity}</div>
+                    </td>
+                    <td>
+                        <div class="text-success fw-bold">$${(sale.salePrice * sale.quantity).toFixed(2)}</div>
+                        <span class="badge ${statusClass} x-small">${sale.paymentStatus}</span>
+                    </td>
+                    <td>
+                        <div class="small">${sale.soldBy}</div>
+                        <div class="text-muted" style="font-size: 0.7rem;" title="${sale.notes || ""}">
+                            ${sale.notes ? sale.notes.substring(0, 15) + "..." : ""}
+                        </div>
+                    </td>
+                    <td>${new Date(sale.saleDate).toLocaleDateString()}</td>
+                </tr>
+            `;
         tableBody.innerHTML += row;
       });
   } catch (error) {
@@ -360,4 +383,152 @@ if (userRegForm) {
             alert("Network Error: Could not reach the server. Please try again later.");
         }
     });
+}
+
+
+/**
+ * Opens the Sales Modal and populates it with item data.
+ */
+function openSaleModal(id, name, stock) {
+    document.getElementById('saleItemId').value = id;
+    document.getElementById('saleItemName').innerText = name;
+    document.getElementById('maxStock').innerText = stock;
+    document.getElementById('saleQty').max = stock; // Browser-side safety check
+    
+    const modal = new bootstrap.Modal(document.getElementById('saleModal'));
+    modal.show();
+}
+
+/**
+ * Handles the submission of the Sales Form.
+ */
+document.getElementById('saleForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const sessionUser = JSON.parse(sessionStorage.getItem('loggedUser'));
+    
+    const saleData = {
+        inventoryItem: { id: document.getElementById('saleItemId').value },
+        quantity: parseInt(document.getElementById('saleQty').value),
+        salePrice: parseFloat(document.getElementById('salePrice').value),
+        paymentStatus: document.getElementById('saleStatus').value,
+        notes: document.getElementById('saleNotes').value,
+        soldBy: sessionUser ? sessionUser.username : "Unknown"
+    };
+
+    try {
+        const response = await fetch('http://localhost:8080/api/sales', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(saleData)
+        });
+
+        if (response.ok) {
+            alert("Transaction completed successfully!");
+            location.reload();
+        } else {
+            const error = await response.text();
+            alert("Error: " + error);
+        }
+    } catch (err) {
+        console.error("Sale Error:", err);
+    }
+});
+
+
+/**
+ * Fetches the entire sales history for the Sales Ledger page.
+ */
+async function fetchFullSalesHistory() {
+    try {
+        const response = await fetch('http://localhost:8080/api/sales');
+        const sales = await response.json();
+        const tableBody = document.getElementById('fullSalesTableBody');
+        if (!tableBody) return;
+
+        tableBody.innerHTML = '';
+        sales.reverse().forEach(sale => {
+            const isPending = sale.paymentStatus !== 'PAID';
+            const statusBadge = isPending ? 'bg-warning text-dark' : 'bg-success';
+            
+            const row = `
+                <tr>
+                    <td>${new Date(sale.saleDate).toLocaleDateString()}</td>
+                    <td>${sale.inventoryItem.product.name}</td>
+                    <td>${sale.quantity}</td>
+                    <td class="fw-bold">$${(sale.salePrice * sale.quantity).toFixed(2)}</td>
+                    <td>${sale.soldBy}</td>
+                    <td><span class="badge ${statusBadge}">${sale.paymentStatus}</span></td>
+                    <td class="small text-muted">${sale.notes || '-'}</td>
+                    <td>
+                        ${isPending ? `<button class="btn btn-sm btn-outline-success" onclick="updateToPaid(${sale.id})">Mark Paid</button>` : '<span class="text-success small">✔ Settled</span>'}
+                    </td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+    } catch (err) { console.error("History fetch error:", err); }
+}
+
+/**
+ * Sends a request to change a sale status to PAID.
+ * This will trigger the Dashboard stats to update because they finally pass the .filter()
+ */
+async function updateToPaid(saleId) {
+    if (!confirm("Confirm payment received? This will update business profits.")) return;
+
+    try {
+        // We use a PUT or PATCH request here
+        const response = await fetch(`http://localhost:8080/api/sales/${saleId}/status?newStatus=PAID`, {
+            method: 'PUT'
+        });
+
+        if (response.ok) {
+            alert("Payment recorded! Dashboard totals have been updated.");
+            fetchFullSalesHistory();
+        }
+    } catch (err) { console.error("Update error:", err); }
+}
+
+/**
+ * Fetches categories for the Management page
+ */
+async function fetchManagementCategories() {
+    const tableBody = document.getElementById('categoryTableBody');
+    if (!tableBody) return;
+
+    try {
+        const response = await fetch('http://localhost:8080/api/categories');
+        const categories = await response.json();
+        tableBody.innerHTML = '';
+        categories.forEach(cat => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td>${cat.name}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${cat.id})">Delete</button>
+                    </td>
+                </tr>`;
+        });
+    } catch (err) { console.error(err); }
+}
+
+/**
+ * Saves a new category to the DB
+ */
+async function saveCategory() {
+    const name = document.getElementById('newCatName').value;
+    if (!name) return;
+
+    try {
+        const response = await fetch('http://localhost:8080/api/categories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name })
+        });
+
+        if (response.ok) {
+            location.reload();
+        }
+    } catch (err) { console.error(err); }
 }

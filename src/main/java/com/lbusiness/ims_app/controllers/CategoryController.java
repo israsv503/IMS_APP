@@ -5,6 +5,7 @@ import com.lbusiness.ims_app.models.Category;
 import com.lbusiness.ims_app.services.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -24,5 +25,22 @@ public class CategoryController {
   @PostMapping
   public Category create(@RequestBody Category category) {
     return categoryService.saveCategory(category);
+  }
+
+
+  /**
+   * Professional Delete Endpoint
+   * This allows the Admin to remove unused categories from the management UI.
+   */
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> delete(@PathVariable Long id) {
+    try {
+      // Assuming your CategoryService will have a deleteCategory method
+      categoryService.deleteCategory(id);
+      return ResponseEntity.ok().build();
+    } catch (Exception e) {
+      return ResponseEntity.badRequest()
+          .body("Error: Cannot delete category. It might be linked to existing products.");
+    }
   }
 }
