@@ -6,28 +6,35 @@ function checkAuth() {
   const user = sessionStorage.getItem("loggedUser");
   if (!user) {
     window.location.href = "login.html";
-  } else {
-    const userData = JSON.parse(user);
+    return;
+  }
 
-    // --- NEW: Role-Based Navigation ---
-    // If the user is NOT an admin, hide the Manage Users link
-    const isAdmin = userData.roles.includes("ROLE_ADMIN");
-    const adminLink = document.getElementById("adminLink");
+  const userData = JSON.parse(user);
 
-    if (adminLink && !isAdmin) {
-      adminLink.style.display = "none"; // Hide the link from partners
+  // Check if the user has Admin privileges
+  const isAdmin = userData.roles.includes("ROLE_ADMIN");
+  const adminLink = document.getElementById("adminLink");
 
-      // If a partner tries to type users.html in the URL, kick them out
-      if (window.location.pathname.includes("users.html")) {
-        window.location.href = "index.html";
-      }
+  // Logic for the navigation link visibility
+  if (adminLink) {
+    if (isAdmin) {
+      adminLink.style.display = "block"; // Show to Admins
+    } else {
+      adminLink.style.display = "none"; // Hide from Partners
     }
+  }
 
-    // Safety check: only update welcome text if the element exists on this page
-    const welcomeEl = document.getElementById("userWelcome");
-    if (welcomeEl) {
-      welcomeEl.innerText = "Logged in as: " + userData.username;
-    }
+  // SECURITY GUARDRAIL: Prevent manual URL entry to admin page
+  if (window.location.pathname.includes("administration.html") && !isAdmin) {
+    console.warn(
+      "Security Alert: Unauthorized access attempt to Administration page.",
+    );
+    window.location.href = "index.html"; // Redirect intruders to Dashboard
+  }
+
+  const welcomeEl = document.getElementById("userWelcome");
+  if (welcomeEl) {
+    welcomeEl.innerText = "Logged in as: " + userData.username;
   }
 }
 
@@ -51,7 +58,7 @@ window.onload = () => {
   } else if (page === "inventory.html") {
     fetchInventory();
     loadCategories();
-  } else if (page === "users.html") {
+  } else if (page === "administration.html") {
     fetchUsers(); // New logic for the Users page
     fetchManagementCategories();
   } else if (page === "sales.html") {
@@ -531,4 +538,33 @@ async function saveCategory() {
             location.reload();
         }
     } catch (err) { console.error(err); }
+}
+
+/**
+ * Deletes a category after user confirmation.
+ * @param {number} id - The unique ID of the category to remove.
+ */
+async function deleteCategory(id) {
+    // Professional safety check: never delete without asking!
+    if (!confirm("Are you sure? This will remove the category permanently. If products are linked to it, the system will block the deletion for safety.")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/categories/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            // Refresh the table to show it's gone
+            fetchManagementCategories(); 
+        } else {
+            // This catches the 'Foreign Key' error
+            const errorMsg = await response.text();
+            alert("Could not delete: " + (errorMsg || "This category is likely being used by existing products."));
+        }
+    } catch (err) {
+        console.error("Critical error during category deletion:", err);
+        alert("Network Error: Could not reach the server.");
+    }
 }
